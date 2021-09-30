@@ -1,7 +1,6 @@
-# How to use it
+# How to use 
 
-use MUSTAFA\PDO_DATABASE\DataBase;
-
+        use MUSTAFA\PDO_DATABASE\DataBase;
         $options = 
             [
                 // required
