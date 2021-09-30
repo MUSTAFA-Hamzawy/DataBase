@@ -33,34 +33,34 @@ class DataBase
 
     /*------------------------------------------------------------------------*
     *                                                                         *
-    *            This function to get all data from a table                   *
+    *            This function gets all data from a table                     *
     *                                                                         *
     *------------------------------------------------------------------------ */
 
-    public function selectAll($talbeName)
+    public function selectAll($talbeName, $fetch_type = PDO::FETCH_ASSOC)
     {
-        $data = $this->_connect->query("SELECT * FROM $talbeName")->fetchAll(PDO::FETCH_ASSOC);
+        $data = $this->_connect->query("SELECT * FROM $talbeName")->fetchAll($fetch_type);
         return $data;
     }
 
     /*------------------------------------------------------------------------*
     *                                                                         *
-    *            This function to get all data from a row in a table          *
+    *            This function gets all data from a row in a table            *
     *                                                                         *
     *------------------------------------------------------------------------ */
 
-    public function select_row($tableName, $primary_key)
+    public function select_row($tableName, $primary_key, $fetch_type = PDO::FETCH_ASSOC)
     {
-        $keys = array_keys($primary_key);
-        $condition = "`$keys[0]` = {$primary_key[$keys[0]]}";
+        $key = key($primary_key);         // get the name of primary key [ id, Id, ID, ssn, SSn, SSN, ... ]
+        $condition_statement = "`$key` = {$primary_key[$key]}";
 
-        $data = $this->_connect->query("SELECT * FROM $tableName WHERE $condition")->fetchAll(PDO::FETCH_ASSOC);
+        $data = $this->_connect->query("SELECT * FROM $tableName WHERE $condition_statement")->fetchAll($fetch_type);
         return $data;
     }
 
     /*-----------------------------------------------------------------------*
      *                                                                       *
-     *  This function to insert data into a table                            *
+     *  This function inserts data into a table                              *
      *  $values --> must be sent as array ['attribute_name => 'value']       *
      *---------------------------------------------------------------------- */
 
@@ -69,6 +69,7 @@ class DataBase
         $keys = array_keys($values);
         $count = count($keys);
 
+        // prepare the statement of attributes
         $attributes = "(";
         for ($i = 0; $i < $count; $i++)
         {
@@ -78,6 +79,7 @@ class DataBase
         }
         $attributes .= ')';
 
+        // prepare the statement of the values
         $data = "(";
         for ($i = 0; $i < $count; $i++)
         {
@@ -87,14 +89,13 @@ class DataBase
         }
         $data .= ')';
 
+        // execute the query
         $query = "INSERT INTO $tableName $attributes VALUES $data";
         $this->_connect->query($query);
     }
 
     /*-----------------------------------------------------------------------*
-     *                                                                       *
-     *            This function to get the last inserted id in the db        *
-     *                                                                       *
+     *            This function gets the last inserted id in the db          *
      *---------------------------------------------------------------------- */
 
     public function lastInsertedId()
@@ -103,7 +104,7 @@ class DataBase
     }
 
     /*-----------------------------------------------------------------------*
-     *            This function to delete a row from a table                 *
+     *            This function deletes a row from a table                   *
      *                                                                       *
      * $primary_key --> example : ['id' => 5]                                *
      *---------------------------------------------------------------------- */
@@ -118,15 +119,17 @@ class DataBase
     }
 
     /*-----------------------------------------------------------------------*
-     * This function to delete a row from a table                            *
+     * This function updates a row from a table                              *
      * $values --> must be sent as array ['attribute_name => 'value']        *
      * $primary_key --> example : ['id' => 5]                                *
-     *------------------------------------------------------------------------ */
+     *---------------------------------------------------------------------- */
 
     public function update($tableName, $values, $primary_key)
     {
         $keys  = array_keys($values);
         $count = count($keys);
+
+        // prepare the statement of attributes
         $statement = '';
         for ($i = 0; $i < $count; $i++)
         {
@@ -135,12 +138,16 @@ class DataBase
             if ($i !== $count - 1)
                 $statement .= ', ';
         }
-        $primaryKey = key($primary_key);
-        $condition = "$primaryKey = $primary_key[$primaryKey]";
-        $query = "UPDATE $tableName SET $statement WHERE $condition";
-        echo $query;die;
-        $this->_connect->query($query);
 
+        // extract the primary key name
+        $primaryKey = key($primary_key);
+
+        // condition of the edit
+        $condition = "$primaryKey = $primary_key[$primaryKey]";
+
+        // execute the query
+        $query = "UPDATE $tableName SET $statement WHERE $condition";
+        $this->_connect->query($query);
     }
     
 }
