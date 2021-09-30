@@ -55,7 +55,7 @@ class DataBase
         $condition_statement = "`$key` = {$primary_key[$key]}";
 
         $data = $this->_connect->query("SELECT * FROM $tableName WHERE $condition_statement")->fetchAll($fetch_type);
-        return $data;
+        return $data[0];
     }
 
     /*-----------------------------------------------------------------------*
